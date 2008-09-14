@@ -1,14 +1,14 @@
 <?php
 class NamedScopeBehavior extends ModelBehavior {
-	var $settings = array();
+	static $__settings = array();
 	
 	function setup(&$model, $settings = array()) {
-		$this->settings[$model->name] = $settings;
+	  self::$__settings[$model->name] = $settings;
 	}
 	
 	function beforeFind(&$model, &$queryData) {
 	  $scopes = array();
-	  
+
 	  // passed as scope
     if (!empty($queryData['scope'])) {
       $scope = !is_array($queryData['scope']) ? array($queryData['scope']) : $queryData['scope'];
@@ -23,8 +23,13 @@ class NamedScopeBehavior extends ModelBehavior {
     }
     
     foreach ($scopes as $scope) {
-      if (!empty($this->settings[$model->name][$scope])) {
-        $queryData['conditions'][] = $this->settings[$model->name][$scope];
+      if (strpos($scope, '.')) {
+        list($scopeModel, $scope) = explode('.', $scope);
+      } else {
+        $scopeModel = $model->name;
+      }
+      if (!empty(self::$__settings[$scopeModel][$scope])) {
+        $queryData['conditions'][] = self::$__settings[$scopeModel][$scope];
       }
     }
     return $queryData;
