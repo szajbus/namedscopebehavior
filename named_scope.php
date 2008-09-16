@@ -8,17 +8,16 @@ class NamedScopeBehavior extends ModelBehavior {
 	
 	function beforeFind(&$model, &$queryData) {
 	  $scopes = array();
-
-	  // passed as scope
-    if (!empty($queryData['scope'])) {
-      $scope = !is_array($queryData['scope']) ? array($queryData['scope']) : $queryData['scope'];
+	  // passed as scopes
+    if (!empty($queryData['scopes'])) {
+      $scope = !is_array($queryData['scopes']) ? array($queryData['scopes']) : $queryData['scopes'];
       $scopes = am($scopes, $scope);
     }
     
-    // passed as conditions['scope']
-    if (!empty($queryData['conditions']['scope'])) {
-      $scope = !is_array($queryData['conditions']['scope']) ? array($queryData['conditions']['scope']) : $queryData['conditions']['scope'];
-      unset($queryData['conditions']['scope']);
+    // passed as conditions['scopes']
+    if (!empty($queryData['conditions']['scopes'])) {
+      $scope = !is_array($queryData['conditions']['scopes']) ? array($queryData['conditions']['scopes']) : $queryData['conditions']['scopes'];
+      unset($queryData['conditions']['scopes']);
       $scopes = am($scopes, $scope);
     }
     
@@ -29,9 +28,16 @@ class NamedScopeBehavior extends ModelBehavior {
         $scopeModel = $model->name;
       }
       if (!empty(self::$__settings[$scopeModel][$scope])) {
-        $queryData['conditions'][] = self::$__settings[$scopeModel][$scope];
+        $conditions = self::$__settings[$scopeModel][$scope];
+        if (!is_array($conditions)) {
+          $conditions = array($conditions);
+        }
+        foreach ($conditions as $condition) {
+          $queryData['conditions'][] = $condition;
+        }
       }
     }
+    
     return $queryData;
 	}
 }

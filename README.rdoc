@@ -19,7 +19,7 @@ $actsAs = array(
 
 Then in your controller (or anywhere else) you can do:
 
-$this->User->find('all', array('scope' => array('activated')));
+$this->User->find('all', array('scopes' => array('activated')));
 
 which is an equivalent to:
 
@@ -27,19 +27,19 @@ $this->User->find('all', array('conditions' => array('User.activated' => 1)));
 
 You can use many scopes at once and mix them with usually defined conditions:
 
-$this->User->find('all', array('condtions' => array('User.admin' => 1), 'scope' => array('activated', 'online')))
+$this->User->find('all', array('condtions' => array('User.admin' => 1), 'scopes' => array('activated', 'online')))
 
 If you have associated models (hasOne or belongsTo) and they have named scopes defined you can use them all in one find query:
-$this->User->find('all', array('scope' => ('activated', 'Group.admins'))) 
+$this->User->find('all', array('scopes' => ('activated', 'Group.admins'))) 
 // assuming that User belongsTo Group and Group model has 'admins' named scope defined.
 
-Scope works also with pagination (in your controller):
+Scopes works also with pagination (in your controller):
 
 $paginate = array(
   'User' => array(
     'order' => 'created ASC',
     'limit' => 20,
-    'scope' => array('online', 'activated')
+    'scopes' => array('online', 'activated')
   )
 )
 
