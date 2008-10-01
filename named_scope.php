@@ -15,7 +15,7 @@ class NamedScopeBehavior extends ModelBehavior {
     }
     
     // passed as conditions['scopes']
-    if (!empty($queryData['conditions']['scopes'])) {
+    if (is_array($queryData['conditions']) && !empty($queryData['conditions']['scopes'])) {
       $scope = !is_array($queryData['conditions']['scopes']) ? array($queryData['conditions']['scopes']) : $queryData['conditions']['scopes'];
       unset($queryData['conditions']['scopes']);
       $scopes = am($scopes, $scope);
