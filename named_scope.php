@@ -29,7 +29,7 @@ class NamedScopeBehavior extends ModelBehavior {
     foreach ($this->_conditions($scopes, $model->name) as $condition) {
       $queryData['conditions'][] = $condition;
     }
-    pr($queryData);
+    
     return $queryData;
 	}
 	
