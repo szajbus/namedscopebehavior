@@ -6,7 +6,7 @@ class NamedScopeBehavior extends ModelBehavior {
 	  self::$__settings[$model->name] = $settings;
 	}
 	
-	function beforeFind(&$model, &$queryData) {
+	function beforeFind(&$model, $queryData) {
 	  $scopes = array();
 	  // passed as scopes
     if (!empty($queryData['scopes'])) {
@@ -20,12 +20,29 @@ class NamedScopeBehavior extends ModelBehavior {
       unset($queryData['conditions']['scopes']);
       $scopes = am($scopes, $scope);
     }
+
+    // if there are scopes defined, we need to get rid of possible condition set earlier by find() method if model->id was set
+    if (!empty($scopes) && !empty($model->id) &&  !empty($queryData['conditions']["`{$model->alias}`.`{$model->primaryKey}`"]) && $queryData['conditions']["`{$model->alias}`.`{$model->primaryKey}`"] == $model->id) {
+      unset($queryData['conditions']["`{$model->alias}`.`{$model->primaryKey}`"]);
+    }
     
-    foreach ($scopes as $scope) {
+    foreach ($this->_conditions($scopes, $model->name) as $condition) {
+      $queryData['conditions'][] = $condition;
+    }
+    pr($queryData);
+    return $queryData;
+	}
+	
+	function _conditions($scopes = array(), $modelName = '') {
+	  if (!is_array($scopes)) {
+	    $scopes = array($scopes);
+	  }
+	  $_conditions = array();
+	  foreach ($scopes as $scope) {
       if (strpos($scope, '.')) {
         list($scopeModel, $scope) = explode('.', $scope);
       } else {
-        $scopeModel = $model->name;
+        $scopeModel = $modelName;
       }
       if (!empty(self::$__settings[$scopeModel][$scope])) {
         $conditions = self::$__settings[$scopeModel][$scope];
@@ -33,12 +50,17 @@ class NamedScopeBehavior extends ModelBehavior {
           $conditions = array($conditions);
         }
         foreach ($conditions as $condition) {
-          $queryData['conditions'][] = $condition;
+          $_conditions[] = $condition;
         }
       }
     }
     
-    return $queryData;
+    return $_conditions;
+	}
+	
+	function scopeSql(&$model, $scope) {
+	  $db =& ConnectionManager::getDataSource($model->useDbConfig);
+    return $db->conditions($this->_conditions($scope, $model->name), false, $model); 
 	}
 }
 ?>
